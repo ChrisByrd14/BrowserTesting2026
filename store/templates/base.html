@@ -2,11 +2,23 @@
 <html>
     <head>
         <title>{% block title %}Widgets R Us{% endblock %}</title>
+
+        <link href="{{url_for('static', filename='css/bootstrap.min.css')}}" rel="stylesheet"/>
+        <link href="{{url_for('static', filename='css/font-awesome.min.css')}}" rel="stylesheet"/>
     </head>
     <body>
         {% if cart_count is defined %}
-            Cart Count: {{cart_count}}
+            <div style="position: relative;">
+                <i class="icon-shopping-cart icon-2x"></i>
+                {% if cart_count > 0 %}
+                    <span>{{cart_count}}</span>
+                {% endif %}
+            </div>
         {% endif %}
+
         {% block content %}{% endblock %}
+
+        <script src="{{url_for('static', filename='js/bootstrap.bundle.min.js')}}" defer></script>
+        {% block scripts %}{% endblock %}
     </body>
 </html>

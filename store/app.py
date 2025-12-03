@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
@@ -32,8 +33,11 @@ def index():
         Cart.create(session_id=session_id)
         session["session_id"] = session_id
 
-    items = Product.select().where(Product.deleted >> None)
-    return render_template("index.html", items=items, **common_view_data())
+    items = [p.to_dict() for p in Product.select().where(Product.deleted >> None)]
+    print(items)
+    return render_template(
+        "index.html", items=json.dumps(items, default=str), **common_view_data()
+    )
 
 
 @app.route("/item/<slug>")

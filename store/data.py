@@ -8,6 +8,8 @@ db = peewee.SqliteDatabase("store.db")
 
 
 class __BaseModel(peewee.Model):
+    dict_date_format = "%Y-%m-%d %H:%M:%S"
+
     class Meta:
         database = db
 
@@ -15,6 +17,14 @@ class __BaseModel(peewee.Model):
     created = peewee.DateTimeField(default=datetime.now)
     updated = peewee.DateTimeField(null=True)
     deleted = peewee.DateTimeField(null=True)
+
+    def to_dict(self):
+        result = {"id": self.id}
+        for column in ("created", "updated", "deleted"):
+            if val := getattr(self, column):
+                result[column] = val.strftime(self.dict_date_format) if val else None
+
+        return result
 
     def save(self, *args, **kwargs):
         if self.id:
@@ -30,6 +40,18 @@ class Product(__BaseModel):
     purchase_price = peewee.DecimalField(max_digits=9)
     sale_price = peewee.DecimalField(max_digits=9)
     on_hand = peewee.IntegerField()
+
+    def to_dict(self):
+        return {
+            **super().to_dict(),
+            "name": self.name,
+            "slug": self.slug,
+            "description": self.description,
+            # "purchase_price": self.purchase_price,
+            "sale_price": self.sale_price,
+            "on_hand": self.on_hand,
+            "created": self.created.strftime("%Y-%m-%d %H:%M:%S"),
+        }
 
 
 class Cart(__BaseModel):
