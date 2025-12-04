@@ -1,13 +1,15 @@
 from datetime import datetime
-from decimal import Decimal
+import os.path
 
 import peewee
 
 
-db = peewee.SqliteDatabase("store.db")
+db = peewee.SqliteDatabase(os.path.join(os.path.dirname(__file__), "..", "store.db"))
 
 
 class __BaseModel(peewee.Model):
+    dict_date_format = "%Y-%m-%d %H:%M:%S"
+
     class Meta:
         database = db
 
@@ -15,6 +17,14 @@ class __BaseModel(peewee.Model):
     created = peewee.DateTimeField(default=datetime.now)
     updated = peewee.DateTimeField(null=True)
     deleted = peewee.DateTimeField(null=True)
+
+    def to_dict(self):
+        result = {"id": self.id}
+        for column in ("created", "updated", "deleted"):
+            if val := getattr(self, column):
+                result[column] = val.strftime(self.dict_date_format) if val else None
+
+        return result
 
     def save(self, *args, **kwargs):
         if self.id:
@@ -31,6 +41,25 @@ class Product(__BaseModel):
     sale_price = peewee.DecimalField(max_digits=9)
     on_hand = peewee.IntegerField()
 
+    def to_dict(self):
+        return {
+            **super().to_dict(),
+            "name": self.name,
+            "slug": self.slug,
+            "description": self.description,
+            # "purchase_price": self.purchase_price,
+            "sale_price": self.sale_price,
+            "on_hand": self.on_hand,
+            "created": self.created.strftime("%Y-%m-%d %H:%M:%S"),
+        }
+
+
+class Review(__BaseModel):
+    reviewer = peewee.CharField()
+    review_text = peewee.TextField()
+    rating = peewee.DecimalField()
+    product_id = peewee.ForeignKeyField(Product, backref="reviews")
+
 
 class Cart(__BaseModel):
     session_id = peewee.CharField(unique=True)
@@ -43,11 +72,14 @@ class CartItem(__BaseModel):
 
 
 db.connect()
-db.create_tables([Product, Cart, CartItem], safe=True)
+db.create_tables([Product, Review, Cart, CartItem], safe=True)
 
 
 def get_cart_items(session_id: str | None, **kwargs) -> list[CartItem]:
-    if not session_id:
-        return []
+    try:
+        if not session_id:
+            raise ValueError()
 
-    return list(Cart.get(session_id=session_id).items)
+        return list(Cart.get(session_id=session_id).items)
+    except:
+        return []

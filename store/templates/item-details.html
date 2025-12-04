@@ -5,7 +5,55 @@
 {% endblock %}
 
 {% block content %}
-    <h1>{{ item.name | title }}</h1>
-    $ {{ "{:,.2f}".format(item.sale_price) }}
-    <p>{{ item.description | replace('\n', '</p><p>') | safe }}</p>
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="card px-0">
+            <img class="card-img" src="https://via.assets.so/img.jpg?w=250&h=250&bg=e5e7eb&text={{item.name}}&fontSize=12&f=png" alt="{{item.name}}" />
+
+            <div class="card-body">
+                <h1>{{ item.name | title }}</h1>
+                $ {{ "{:,.2f}".format(item.sale_price) }}
+                <p>{{ item.description | replace('\n', '</p><p>') | safe }}</p>
+
+                <form action="/cart/add/{{item.slug}}" method="POST">
+                    <button type="submit" style="max-width: 35%" class="btn btn-success">Add to Cart</a>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="row col-lg-8 offset-lg-2 col-md-10 offset-md-1 col-sm-12">
+        <h2>Reviews:</h2>
+
+        {% for review in item.reviews %}
+            <div class="review">
+                <h3>
+                    {{review.reviewer}}
+
+                    <span class="float-right">{{review.rating|rating_stars}}</span>
+                </h3>
+
+                {{review.review_text}}
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+    .card {
+        width: 90%;
+        max-width: 800px;
+        justify: center;
+    }
+    .review {
+        background: #fff !important;
+        border: 1px solid #e0e0e0;
+        margin-top: 1em !important;
+        border-radius: 0.25em;
+        padding: 1em 2em;
+        box-shadow: 2px 2px 5px 0px #e0e0e0;
+  }
+</style>
 {% endblock %}
