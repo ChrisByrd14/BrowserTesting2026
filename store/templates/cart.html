@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}
+    View Your Cart
+{% endblock %}
+
+
+{% block content %}
+<div class="container" v-scope>
+    <form method="POST">{# Empty form used to send /car/remove request #}</form>
+
+    <h2>Shopping Cart</h2>
+
+    {% include 'partials/messages.html' %}
+
+    <div class="row" v-if="items.length > 0">
+        <div class="row cart-item" v-for="item in items" :key=item.id>
+            <div class="col-1">
+                <img :src="productImage(item)" />
+            </div>
+            <div class="col-8" v-html="getItemDetails(item)"></div>
+            <div class="col-2 text-end">
+                Qty: {% raw %}{{item.quantity}}{% endraw %} at
+                <span class="" v-text="nbrFmt.format(item.product.sale_price)"></span>
+                <br/>
+                <strong v-text="nbrFmt.format(item.product.sale_price * item.quantity)"></strong>
+            </div>
+            <div class="col-1 text-start">
+                <i title='Click to remove item from your cart'
+                        class="icon-remove-sign text-danger icon-2x"
+                        style="cursor: pointer;color: firebrick;"
+                        @click="deleteItem(item)"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" v-else>
+        <div class="alert alert-warning text-center">
+            <h3>Looks like your cart is empty.</h3>
+            <a href="/store">&larr; Continue Shopping</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{url_for('static', filename='js/petite-vue.js')}}"></script>
+<script defer>
+    let app = PetiteVue.createApp({
+        items: {{ cart_items | safe }},
+        itemToDelete: '',
+        nbrFmt: new Intl.NumberFormat("en-US", {style: "currency", currency: "USD"}),
+        mounted: function(e) {
+            console.log(this.items)
+        },
+        productImage(item) {
+            return "https://via.assets.so/img.jpg?w=75&h=75&bg=e5e7eb&text=Item ID " + item.product.id + "&fontSize=12&f=png"
+        },
+        getItemDetails(item) {
+            let descParagraphs = '<p>' + item.product.description.replace('\n', '</p><p>') + '</p>';
+            return (
+                "<h2>" + item.product.name + "</h2>" +
+                "<div title='" + item.product.description + "'>" + descParagraphs + "</div>"
+            );
+        },
+        deleteItem(item) {
+            let form = document.getElementsByTagName('form')[0];
+            form.action = "/cart/remove/" + item.product.slug
+            form.submit()
+        }
+    });
+
+    app.mount()
+</script>
+{% endblock %}
+
+{% block styles %}
+<style>
+    .cart-item {
+        background: #fff !important;
+        border: 1px solid #e0e0e0;
+        margin-top: 1em !important;
+        border-radius: 0.25em;
+        padding: 1em 2em;
+        box-shadow: 2px 2px 5px 0px #e0e0e0;
+  }
+</style>
+{% endblock %}

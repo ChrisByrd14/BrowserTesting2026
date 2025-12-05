@@ -5,6 +5,7 @@
 
         <link href="{{url_for('static', filename='css/bootstrap.min.css')}}" rel="stylesheet"/>
         <link href="{{url_for('static', filename='css/font-awesome.min.css')}}" rel="stylesheet"/>
+        <link href="{{url_for('static', filename='css/styles.css')}}" rel="stylesheet"/>
         <style>
             body {
                 background: #f8f8f8;
@@ -16,16 +17,12 @@
         {% block styles %}{% endblock %}
     </head>
     <body>
-        {% if cart_count is defined %}
-            <div style="position: relative;">
-                <i class="icon-shopping-cart icon-2x"></i>
-                {% if cart_count > 0 %}
-                    <span>{{cart_count}}</span>
-                {% endif %}
-            </div>
-        {% endif %}
+        {% include 'partials/navbar.html' %}
 
-        {% block content %}{% endblock %}
+
+        <div class="container">
+            {% block content %}{% endblock %}
+        </div>
 
         <script src="{{url_for('static', filename='js/bootstrap.bundle.min.js')}}" defer></script>
         {% block scripts %}{% endblock %}

@@ -7,16 +7,29 @@
 {% block content %}
 <div class="container-fluid">
     <div class="row justify-content-center">
+        <div class="row">
+            <a href="/store">&larr; Go Back</a>
+        </div>
         <div class="card px-0">
-            <img class="card-img" src="https://via.assets.so/img.jpg?w=250&h=250&bg=e5e7eb&text={{item.name}}&fontSize=12&f=png" alt="{{item.name}}" />
+            <img class="card-img" src="https://via.assets.so/img.jpg?w=150&h=150&bg=e5e7eb&text={{item.name}}&fontSize=12&f=png" alt="{{item.name}}" />
 
             <div class="card-body">
                 <h1>{{ item.name | title }}</h1>
                 $ {{ "{:,.2f}".format(item.sale_price) }}
                 <p>{{ item.description | replace('\n', '</p><p>') | safe }}</p>
 
-                <form action="/cart/add/{{item.slug}}" method="POST">
-                    <button type="submit" style="max-width: 35%" class="btn btn-success">Add to Cart</a>
+                {% include 'partials/messages.html' %}
+
+                <form action="/cart/add/{{item.slug}}" method="POST" class='col-6 offset-6'>
+                    {# <input type="hidden" name='prev' value="/item/{{item.slug}}" readonly hidden /> #}
+                    <div class="row">
+                        <div class="btn-group">
+                            <label for="quantity" class='pt-2'>Qty:</label>
+                            &nbsp;
+                            <input type='number' name='quantity' value="1" min="-1" max="{{item.on_hand*2}}" class="form-control" style="max-width: 75px;" />
+                            <button type="submit" class="btn btn-success">Add to Cart</a>
+                        </div>
+                    </div>
                 </form>
             </div>
         </div>
@@ -44,7 +57,7 @@
 <style>
     .card {
         width: 90%;
-        max-width: 800px;
+        max-width: 600px;
         justify: center;
     }
     .review {

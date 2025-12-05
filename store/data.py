@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 import os.path
 
 import peewee
@@ -48,7 +49,7 @@ class Product(__BaseModel):
             "slug": self.slug,
             "description": self.description,
             # "purchase_price": self.purchase_price,
-            "sale_price": self.sale_price,
+            "sale_price": float(self.sale_price),
             "on_hand": self.on_hand,
             "created": self.created.strftime("%Y-%m-%d %H:%M:%S"),
         }
@@ -67,8 +68,16 @@ class Cart(__BaseModel):
 
 class CartItem(__BaseModel):
     cart = peewee.ForeignKeyField(Cart, backref="items")
-    product_id = peewee.ForeignKeyField(Product, backref="carts")
+    product = peewee.ForeignKeyField(Product, backref="carts")
     quantity = peewee.IntegerField()
+
+    def to_dict(self):
+        return {
+            **super().to_dict(),
+            "quantity": self.quantity,
+            "product": self.product.to_dict(),
+            "created": self.created.strftime("%Y-%m-%d %H:%M:%S"),
+        }
 
 
 db.connect()

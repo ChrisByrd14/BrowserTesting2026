@@ -25,5 +25,14 @@ def rating_stars_def(app: flask.Flask):
     return rating_stars
 
 
+def currency_fmt_def(app: flask.Flask):
+    @app.template_filter("currency_fmt")
+    def currency_fmt(value: Decimal) -> str:
+        return f"$ {value:,.2f}"
+
+    return currency_fmt
+
+
 def register_custom_filters(app: flask.Flask):
     rating_stars_def(app)
+    currency_fmt_def(app)

@@ -1,0 +1,19 @@
+<div class="container">
+    <header class="d-flex flex-wrap justify-content-center py-3 mb-4 border-bottom">
+        <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none">
+            <h1>Widgets <span style='transform: scale(-1, 1)'>R'</span> Us</h1>
+        </a>
+        <ul class="nav nav-pills">
+            <li class="nav-item"><a href="/store" class="nav-link active" aria-current="page">Products</a></li>
+            {% if cart_count is defined %}
+                <li class="nav-item" style="padding-top:0.35em;padding-left:0.35em;">
+                    <a href="/cart" class='text-primary'>
+                    <span class='icon-stack icon-2x'>
+                        <i class="icon-shopping-cart text-primary" {% if cart_count > 0 %}data-count="{{cart_count}}"{% endif %}></i>
+                    </span>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </header>
+</div>
