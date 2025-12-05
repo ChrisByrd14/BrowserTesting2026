@@ -9,16 +9,19 @@
                     <img class="card-img" :src="productImage(item)" :alt="item.name"/>
                 </a>
                 <div class="card-body">
-                    <span class="fw-semibold" v-text="item.name"></span> $ <span v-text="item.sale_price"></span><br/>
+                    <span class="fw-semibold" v-text="item.name"></span>
+                    <span v-text="'$ ' + item.sale_price" style='float: right;'></span><br/>
                     <div class="row justify-content-end mt-5">
-                        <a :href="'/item/' + item.slug" style="max-width: 35%" class="btn btn-success">Add to Cart</a>
-                        <a :href="'/item/' + item.slug" style="max-width: 35%" class="btn btn-outline-success ms-2">Product Info</a>
+                        <a :href="'/item/' + item.slug" style="max-width: 35%" class="btn btn-outline-success">Product Info</a>
+                        <a :href="'/item/' + item.slug" style="max-width: 35%" class="btn btn-success ms-2 me-1">Add to Cart</a>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <div v-else class="alert alert-warning text-center">There are no items to display</div>
+    <div class="row" v-else>
+        <div class="alert alert-warning text-center">There are no items to display</div>
     </div>
 </div>
 {% endblock %}
