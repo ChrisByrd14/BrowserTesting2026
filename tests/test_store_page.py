@@ -43,7 +43,7 @@ def test_user_can_add_product_to_cart_from_page(browser, products, clean_cart):
     # select first product on the page
     card_body = browser.find_by_css(".card-body").first
     product_name = card_body.find_by_tag("span")[0].text
-    price = card_body.find_by_tag("span")[1].text.replace("$ ", "")
+    price = card_body.find_by_tag("span")[1].text
 
     card_body.find_by_css('button[type="submit"]').click()
 

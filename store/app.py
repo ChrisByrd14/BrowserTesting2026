@@ -76,14 +76,16 @@ def cart():
             c.to_dict()
             for c in CartItem.select().where(CartItem.cart == cart).prefetch(Product)
         ]
-        return render_template("cart.html", cart_items=cart_items)
-    except:
+    except Exception as e:
+        print('!' * 15, 'Error', str(e))
         try:
             del session["session_id"]
         except:
             ...
         flash("An error occurred.", "error")
         return redirect("/store")
+
+    return render_template("cart.html", cart_items=cart_items)
 
 
 @app.route("/cart/add/<slug>", methods=["POST"])

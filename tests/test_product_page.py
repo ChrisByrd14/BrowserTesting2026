@@ -47,23 +47,18 @@ def test_reviews_are_displayed(browser, products):
         assert browser.is_text_present(expected_text)
 
 
-def test_can_add_item_to_cart(browser, products):
+def test_can_add_item_to_cart(browser, products, clean_cart):
     product = products[0]
     browser.visit(f"{PAGE}/{product.slug}")
     browser.find_by_css('button[type="submit"]').click()
-
-    # wait = WebDriverWait(browser.driver, 3)
-    # wait.until(lambda driver: driver.current_url.endswith("/cart"))
 
     # redirected to cart page
     assert browser.url.endswith("/cart")
 
     # check for success message
-    assert browser.find_by_css('.alert[role="alert"]').text.endswith(
-        "has been added to your cart"
-    )
+    assert browser.is_text_present(f'Item "{product.name}" has been added to your cart', wait_time=2)
 
-    price_text = "${0:,.2f}".format(product.sale_price)
+    price_text = "$ {0:,.2f}".format(product.sale_price)
 
     # once for the per-unit price, and item subtotal
     assert browser.html.count(price_text) == 2
@@ -84,9 +79,9 @@ def test_can_add_more_than_one_item_to_cart(browser, products, clean_cart):
     )
 
     cart_item = browser.find_by_css(".cart-item").first
-    per_unit_price_text = "${0:,.2f}".format(product.sale_price)
+    per_unit_price_text = "$ {0:,.2f}".format(product.sale_price)
     assert per_unit_price_text in cart_item.text
-    item_subtotal = "${0:,.2f}".format(product.sale_price * product.on_hand)
+    item_subtotal = "$ {0:,.2f}".format(product.sale_price * product.on_hand)
     assert item_subtotal in cart_item.text
 
 

@@ -215,5 +215,5 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
-store.db
+store.db*
 key.py
