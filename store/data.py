@@ -1,11 +1,10 @@
 from datetime import datetime
-import json
 import os.path
 
 import peewee
 
-
-db = peewee.SqliteDatabase(os.path.join(os.path.dirname(__file__), "..", "store.db"))
+__db_path = os.path.join(os.path.dirname(__file__), "..", "store.db")
+db = peewee.SqliteDatabase(__db_path, pragmas={"journal_mode": "wal"})
 
 
 class __BaseModel(peewee.Model):
@@ -14,7 +13,7 @@ class __BaseModel(peewee.Model):
     class Meta:
         database = db
 
-    id = peewee.PrimaryKeyField()
+    id = peewee.AutoField()
     created = peewee.DateTimeField(default=datetime.now)
     updated = peewee.DateTimeField(null=True)
     deleted = peewee.DateTimeField(null=True)
