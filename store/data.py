@@ -83,7 +83,7 @@ db.connect()
 db.create_tables([Product, Review, Cart, CartItem], safe=True)
 
 
-def get_cart_items(session_id: str | None, **kwargs) -> list[CartItem]:
+def get_cart_items(session_id: str, **kwargs) -> list[CartItem]:
     try:
         if not session_id:
             raise ValueError()
