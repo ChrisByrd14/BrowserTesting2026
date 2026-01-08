@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
-from flask import Flask, redirect, render_template, session, flash, request
+from flask import Flask, make_response, redirect, render_template, flash, request
 
 from store.data import *
 from store.template_filters import register_custom_filters
@@ -21,15 +21,20 @@ app.secret_key = key.SECRET_KEY
 register_custom_filters(app)
 
 
-def get_or_create_cart() -> Cart:
-    if session.get("session_id", None) is None:
-        session["session_id"] = str(uuid4())
-    return Cart.get_or_create(session_id=session["session_id"])[0]
+def get_or_create_cart() -> tuple[Cart, str]:
+    session_id = request.cookies.get("session_id", None)
+    if session_id is None:
+        session_id = str(uuid4())
+    return Cart.get_or_create(session_id=session_id)[0], session_id
 
 
 def common_view_data() -> dict[str, Any]:
+    session_id = request.cookies.get("session_id", None)
+    if session_id is None:
+        return {"cart_count": 0}
+
     return {
-        "cart_count": len(get_cart_items(session.get("session_id", None))),
+        "cart_count": len(get_cart_items(session_id)),
     }
 
 
@@ -40,16 +45,23 @@ def index():
 
     Uses JavaScript to render product cards to the page.
     """
-    get_or_create_cart()
-
     items = [p.to_dict() for p in Product.select().where(Product.deleted >> None)]
     for item in items:
         item["sale_price"] = "{0:,.2f}".format(item["sale_price"])
 
-    print([i["sale_price"] for i in items[:10]])
-    return render_template(
-        "index.html", items=json.dumps(items, default=str), **common_view_data()
+    response = make_response(
+        render_template(
+            "index.html", items=json.dumps(items, default=str), **common_view_data()
+        )
     )
+
+    if request.cookies.get("session_id", None) is None:
+        # user doesn't have a cart in the DB, create one and link it to
+        # the Session ID cookie we're returning in the response
+        _, session_id = get_or_create_cart()
+        response.set_cookie("session_id", session_id)
+
+    return response
 
 
 @app.route("/item/<slug>")
@@ -62,7 +74,17 @@ def item(slug: str):
         product = Product.get(Product.slug == slug)
         if not product or product.deleted is not None:
             raise Exception()
-        return render_template("item-details.html", item=product, **common_view_data())
+
+        # ensure we have a cart instance, if one doesn't exist then create it
+        _, session_id = get_or_create_cart()
+
+        response = make_response(
+            render_template("item-details.html", item=product, **common_view_data())
+        )
+        if request.cookies.get("session_id", None) is None:
+            response.set_cookie("sesion_id", session_id)
+
+        return response
     except:
         flash("Invalid product selected", "error")
         return redirect("/store")
@@ -71,17 +93,13 @@ def item(slug: str):
 @app.route("/cart")
 def cart():
     try:
-        cart = get_or_create_cart()
+        cart, _ = get_or_create_cart()
         cart_items = [
             c.to_dict()
             for c in CartItem.select().where(CartItem.cart == cart).prefetch(Product)
         ]
     except Exception as e:
-        print('!' * 15, 'Error', str(e))
-        try:
-            del session["session_id"]
-        except:
-            ...
+        print("!" * 15, "Error", str(e))
         flash("An error occurred.", "error")
         return redirect("/store")
 
@@ -90,7 +108,7 @@ def cart():
 
 @app.route("/cart/add/<slug>", methods=["POST"])
 def add_item_to_cart(slug: str):
-    cart = get_or_create_cart()
+    cart, _ = get_or_create_cart()
 
     product = Product.select().where(Product.slug == slug).first()
     if not product:
@@ -124,7 +142,7 @@ def add_item_to_cart(slug: str):
 def remove_item_from_cart(slug: str):
     try:
         product = Product.get(slug=slug)
-        cart = get_or_create_cart()
+        cart, _ = get_or_create_cart()
         CartItem.delete().where(
             CartItem.product == product, CartItem.cart == cart
         ).execute()

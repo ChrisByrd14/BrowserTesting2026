@@ -23,6 +23,7 @@ def browser(request):
         global _browser
         if _browser:
             _browser.quit()
+            _browser = None
 
     request.addfinalizer(close_browser)
 
@@ -62,3 +63,18 @@ def cart_id():
     """Get most recent Cart ID, since test browser should always be the most recent."""
     cart = Cart.select().order_by(-Cart.id).first()
     return cart.id
+
+
+def pytest_sessionstart():
+    global _browser
+    _browser = Browser("firefox", service=Service())
+
+    # cart relies on cookies and Splinter can't set
+    # cookies until at least one visit() request has been made
+    _browser.visit("http://127.0.0.1:5000/store")
+
+
+def pytest_sessionfinish():
+    global _browser
+    if _browser is not None:
+        _browser.quit()
