@@ -1,5 +1,5 @@
+#!/bin/env python3
 from datetime import datetime
-import time
 import unittest
 
 from selenium.webdriver.firefox.service import Service
@@ -34,13 +34,13 @@ class BaseTestClass(unittest.TestCase):
 
 class CartPageTests(BaseTestClass):
     def setUp(self):
+        """This code runs before each test method."""
         super().setUp()
         helpers.clean_cart()
         self.page = "http://127.0.0.1:5000/cart/"
         self.cart = Cart.select().order_by(-Cart.id).first()
 
     def test_empty_cart(self):
-        helpers.clean_cart()
         self.browser.visit(self.page)
         self.assertTrue(browser.is_text_present("Looks like your cart is empty."))
 
