@@ -17,6 +17,7 @@ if not secret_key_file.exists():
 import key
 
 app = Flask(__name__)
+app.url_map.strict_slashes = False
 app.secret_key = key.SECRET_KEY
 register_custom_filters(app)
 

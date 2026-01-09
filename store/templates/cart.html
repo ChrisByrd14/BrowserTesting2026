@@ -18,20 +18,34 @@ View Your Cart
                 <img
                     src="https://via.assets.so/img.jpg?w=75&h=75&bg=e5e7eb&text=Item ID {{item.product.id}}&fontSize=12&f=png" />
             </div>
-            <div class="col-8">
+            <div class="col-7">
                 <p>{{item.product.description.replace("\n", "</p><p>")|safe}}</p>
             </div>
-            <div class="col-2 text-end">
+            <div class="col-3 text-end">
                 Qty: {{item.quantity}} at
                 {{item.product.sale_price|currency_fmt}}
                 <br />
+
                 <strong>{{((item.product.sale_price|float) * item.quantity)|currency_fmt}}</strong>
+                <br/>
+
+                {#
+                <form class="updateQuantity row row-cols-lg-auto" method="POST" action="/cart/update/{{item.product.slug}}" style="display: none;">
+                    {{ csrf_input }}
+                    <input class="form-control" name="quantity" type="number" value="{{item.quantity}}" style="max-width: 45%; margin-right: 0.25em;" />
+                    <button type="submit" class="btn btn-outline-success">Update</button>
+                </form>
+
+                <button class="editQuantity btn btn-outline-success">
+                    <i class="icon-edit"></i>&nbsp;Edit
+                </button> #}
+
             </div>
             <div class="col-1 text-start">
-                <form method="POST" action="/cart/remove/{{item.product.slug}}">
+                <form id="remove_{{loop.index0}}" method="POST" action="/cart/remove/{{item.product.slug}}">
                     {{ csrf_input }}
                     <i title='Click to remove item from your cart' class="icon-remove-sign text-danger icon-2x"
-                        style="cursor: pointer;color: firebrick;" onclick="document.getElementsByTagName('form')[{{loop.index0}}].submit()"></i>
+                        style="cursor: pointer;color: firebrick;" onclick="document.getElementById('remove_{{loop.index0}}').submit()"></i>
                 </form>
             </div>
         </div>

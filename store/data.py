@@ -3,8 +3,13 @@ import os.path
 
 import peewee
 
-__db_path = os.path.join(os.path.dirname(__file__), "..", "store.db")
-db = peewee.SqliteDatabase(__db_path, pragmas={"journal_mode": "wal"})
+db = peewee.MySQLDatabase(
+    "browser_test_db",
+    user=os.environ["MARIADB_USER"],
+    password=os.environ["MARIADB_PW"],
+    host="localhost",  # Hostname
+    port=3306,
+)
 
 
 class __BaseModel(peewee.Model):
