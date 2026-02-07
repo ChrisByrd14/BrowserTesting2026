@@ -1,6 +1,10 @@
+from os.path import abspath, dirname, join, exists
 from random import choice
+import sys
+import time
 
 from faker import Faker
+import requests
 
 try:
     from data import db, Product, Review, Cart
@@ -9,6 +13,19 @@ except ImportError:
 
 
 fake = Faker()
+
+image_dir = abspath(join(dirname(__file__), 'static', 'images'))
+
+
+def download_image(filename: str, product_name: str, height: int, width: int):
+    resp = requests.get(f'https://via.assets.so/img.jpg?w={width}&h={height}&bg=e5e7eb&text={product_name}&fontSize=12&f=png', stream=True)
+    resp.raise_for_status()
+
+    with open(filename, 'wb') as file:
+        for chunk in resp:
+            file.write(chunk)
+            time.sleep(0.2)
+    time.sleep(0.25)
 
 
 def create_product():
@@ -26,6 +43,13 @@ def create_product():
         on_hand=choice(on_hand_range),
     )
 
+    # download "product images"
+    for w, h in ((75, 90), (150, 150)):
+        image = join(image_dir, f'{p.slug}.png')
+        if h == 150:
+            image = image.replace('.png', '_detail.png')
+        download_image(image, p.name, h, w)
+
     if not choice((1, 1, 0)):
         # approx 1/3 of items won't have any reviews
         return
@@ -40,10 +64,22 @@ def create_product():
 
 
 if __name__ == "__main__":
-    Cart.delete().execute()
-    on_hand_range = list(range(1000))
-    price_range = list(range(50, 59999, 1))  # pennies
-    with db.atomic():
-        for _ in range(50):
-            create_product()
-        db.commit()
+    # if not exists(image_dir):
+    #     print(f'Image directory "{image_dir}" does not exist. Exiting.')
+    #     sys.exit(0)
+    # Cart.delete().execute()
+    # on_hand_range = list(range(1000))
+    # price_range = list(range(50, 59999, 1))  # pennies
+    # with db.atomic():
+    #     for _ in range(50):
+    #         create_product()
+    #     db.commit()
+
+    for product in Product.select():
+        img = join(image_dir, f'{product.slug}.png')
+        if not exists(img):
+            download_image(img, product.name, 90, 75)
+
+        img = join(image_dir, f'{product.slug}_detail.png')
+        if not exists(img):
+            download_image(img, product.name, 150, 150)

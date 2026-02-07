@@ -2,19 +2,20 @@
 from datetime import datetime
 import unittest
 
-from selenium.webdriver.firefox.service import Service
-from splinter import Browser
+from selenium.webdriver.chrome.service import Service
+from splinter.driver import DriverAPI
+from splinter import Browser, Config
 
 from store.data import *
 import test_helpers as helpers
 
 
-browser = None
+browser: DriverAPI = None
 
 
 def setUpModule():
     global browser
-    browser = Browser("firefox", service=Service())
+    browser = Browser("chrome", service=Service(), config=Config(fullscreen=True))
     browser.visit("http://127.0.0.1:5000/store")
 
 
@@ -25,6 +26,8 @@ def tearDownModule():
 
 
 class BaseTestClass(unittest.TestCase):
+    browser: DriverAPI
+
     @classmethod
     def setUpClass(cls):
         global browser
